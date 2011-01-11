@@ -17,6 +17,38 @@ require 'spec_helper'
 require 'xrd/resource_descriptor'
 
 describe XRD::ResourceDescriptor do
+  describe 'with an initialized resource descriptor' do
+    before do
+      @xrd = XRD::ResourceDescriptor.new
+    end
+
+    it 'should allow expiration dates to be set to Time objects' do
+      now = Time.now
+      @xrd.expires = now
+      @xrd.expires.should == now
+    end
+
+    it 'should allow expiration dates to be set to String objects' do
+      now = Time.now
+      @xrd.expires = now.to_s
+      @xrd.expires.to_s.should == now.to_s
+    end
+
+    it 'should allow subject values to be set to URI objects' do
+      @xrd.subject = Addressable::URI.parse('http://example.com/subject')
+      @xrd.subject.should == Addressable::URI.parse(
+        'http://example.com/subject'
+      )
+    end
+
+    it 'should allow subject values to be set to String objects' do
+      @xrd.subject = 'http://example.com/subject'
+      @xrd.subject.should == Addressable::URI.parse(
+        'http://example.com/subject'
+      )
+    end
+  end
+
   describe 'when attempting to parse an empty XRD document' do
     before do
       @xml = <<-XML

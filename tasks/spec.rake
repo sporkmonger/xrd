@@ -19,7 +19,8 @@ namespace :spec do
       '--exclude', '\\.rvm\\/gems',
       '--exclude', '1\\.8\\/gems',
       '--exclude', '1\\.9\\/gems',
-      '--exclude', '\\.rvm'
+      '--exclude', '\\.rvm',
+      '--exclude', '\\/Library\\/Ruby'
     ]
   end
 
