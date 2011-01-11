@@ -14,6 +14,8 @@
 
 require 'spec_helper'
 
+require 'httpadapter/adapters/mock'
+
 require 'xrd/resource_descriptor'
 
 describe XRD::ResourceDescriptor do
@@ -129,7 +131,7 @@ describe XRD::ResourceDescriptor do
       @xrd.subject.to_str.should == 'http://example.com/subject'
     end
 
-    it 'should return a parsed URI' do
+    it 'should return a parsed subject URI' do
       @xrd.subject.should be_kind_of(Addressable::URI)
     end
   end
@@ -154,7 +156,7 @@ describe XRD::ResourceDescriptor do
       )
     end
 
-    it 'should return parsed URIs' do
+    it 'should return parsed alias URIs' do
       @xrd.aliases.each do |a|
         a.should be_kind_of(Addressable::URI)
       end
@@ -173,18 +175,74 @@ describe XRD::ResourceDescriptor do
     end
 
     it 'should return the correct properties' do
-      (@xrd.properties.map { |k, v| [k.to_str, v.to_str] }).should include(
+      (@xrd.properties.map { |k, v| [k.to_str, v] }).should include(
         ['http://spec.example.net/version', '1.0']
       )
-      (@xrd.properties.map { |k, v| [k.to_str, v.to_str] }).should include(
+      (@xrd.properties.map { |k, v| [k.to_str, v] }).should include(
         ['http://spec.example.net/version', '2.0']
       )
     end
 
-    it 'should return parsed URIs' do
+    it 'should return parsed property key URIs' do
       @xrd.properties.each do |k, v|
         k.should be_kind_of(Addressable::URI)
         v.should be_kind_of(String)
+      end
+    end
+  end
+
+  describe 'when attempting to fetch and parse an XRD document' do
+    before do
+      @xml = <<-XML
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Expires>1970-01-01T00:00:00Z</Expires>
+  <Subject>http://example.com/subject</Subject>
+  <Property type="http://spec.example.net/type/person" xsi:nil="true" />
+  <Link rel="http://spec.example.net/auth/1.0"
+    href="http://services.example.com/auth" />
+  <Link rel="http://spec.example.net/photo/1.0" type="image/jpeg"
+    href="http://photos.example.com/gpburdell.jpg">
+    <Title xml:lang="en">User Photo</Title>
+    <Title xml:lang="de">Benutzerfoto</Title>
+    <Property type="http://spec.example.net/created/1.0">1970-01-01</Property>
+  </Link>
+</XRD>
+      XML
+      @adapter = HTTPAdapter::MockAdapter.request_adapter do |request, conn|
+        [
+          200,
+          [['Content-Type', 'application/xrd+xml']],
+          [@xml],
+        ]
+      end
+      @xrd = XRD::ResourceDescriptor.fetch_and_parse(
+        'http://example.com/xrd', @adapter
+      )
+    end
+
+    it 'should return the correct expiration date' do
+      @xrd.expires.should == Time.gm(1970)
+    end
+
+    it 'should return the correct subject' do
+      @xrd.subject.to_str.should == 'http://example.com/subject'
+    end
+
+    it 'should return a parsed subject URI' do
+      @xrd.subject.should be_kind_of(Addressable::URI)
+    end
+
+    it 'should return the correct properties' do
+      (@xrd.properties.map { |k, v| [k.to_str, v] }).should include(
+        ['http://spec.example.net/type/person', nil]
+      )
+    end
+
+    it 'should return parsed property key URIs' do
+      @xrd.properties.each do |k, v|
+        k.should be_kind_of(Addressable::URI)
+        v.should be_kind_of(NilClass)
       end
     end
   end
