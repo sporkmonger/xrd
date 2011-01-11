@@ -64,5 +64,12 @@ module XRD
         @new_property_key, @new_property_value = nil, nil
       end
     end
+
+    begin
+      remove_method :property_keys, :property_keys=
+      remove_method :property_values, :property_values=
+    rescue Exception
+      # It's OK if this fails.  Nobody wants to know about it.
+    end
   end
 end

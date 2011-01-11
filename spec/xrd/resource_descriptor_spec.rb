@@ -47,6 +47,24 @@ describe XRD::ResourceDescriptor do
         'http://example.com/subject'
       )
     end
+
+    it 'should not allow direct access to the property_keys' do
+      (lambda do
+        @xrd.property_keys
+      end).should raise_error(NoMethodError)
+      (lambda do
+        @xrd.property_keys = []
+      end).should raise_error(NoMethodError)
+    end
+
+    it 'should not allow direct access to the property_values' do
+      (lambda do
+        @xrd.property_values
+      end).should raise_error(NoMethodError)
+      (lambda do
+        @xrd.property_values = []
+      end).should raise_error(NoMethodError)
+    end
   end
 
   describe 'when attempting to parse an empty XRD document' do
