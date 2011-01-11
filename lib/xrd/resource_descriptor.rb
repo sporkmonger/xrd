@@ -1,20 +1,25 @@
-require 'sax-machine'
 require 'time'
+require 'sax-machine'
 require 'addressable/uri'
+require 'xrd/properties'
+require 'xrd/link'
 
 module XRD
   NAMESPACE = 'http://docs.oasis-open.org/ns/xri/xrd-1.0'
 
   class ResourceDescriptor
     include SAXMachine
+    include XRD::Properties
 
     element "XRD", :as => :xml_id, :value => "xml:id"
     element "Expires", :as => :expires
     element "Subject", :as => :subject
     elements "Alias", :as => :aliases
-    elements "Property", :as => :property_values
-    elements "Property", :as => :property_keys, :value => "type"
-    elements "Link", :as => :links
+    elements "Link", :as => :links, :class => XRD::Link
+
+    remove_method :expires, :expires=
+    remove_method :subject, :subject=
+    remove_method :aliases, :add_aliases
 
     attr_reader :expires
 
@@ -38,38 +43,6 @@ module XRD
 
     def add_aliases(new_alias)
       self.aliases << Addressable::URI.parse(new_alias)
-    end
-
-    def properties
-      @properties ||= []
-    end
-
-  protected
-    def add_property_keys(new_property_key)
-      @new_property_key = new_property_key
-      merge_and_add_property()
-    end
-
-    def add_property_values(new_property_value)
-      @new_property_value = new_property_value
-      merge_and_add_property()
-    end
-
-    def merge_and_add_property
-      if @new_property_key && @new_property_value
-        self.properties << [
-          Addressable::URI.parse(@new_property_key),
-          @new_property_value
-        ]
-        @new_property_key, @new_property_value = nil, nil
-      end
-    end
-
-    begin
-      remove_method :property_keys, :property_keys=
-      remove_method :property_values, :property_values=
-    rescue Exception
-      # It's OK if this fails.  Nobody wants to know about it.
     end
   end
 end
