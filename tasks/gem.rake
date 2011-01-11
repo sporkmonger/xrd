@@ -22,7 +22,7 @@ namespace :gem do
     s.extra_rdoc_files = %w( README.md )
     s.rdoc_options.concat ['--main',  'README.md']
 
-    s.add_runtime_dependency('sax-machine', '>= 0.0.15')
+    s.add_runtime_dependency('sporkmonger-sax-machine', '>= 0.1.1')
 
     s.add_development_dependency('rake', '~> 0.8.3')
     s.add_development_dependency('rspec', '~> 1.1.11')
