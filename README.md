@@ -22,14 +22,14 @@ An XRD parser for Ruby.
     xrd.aliases
     # => [#<Addressable::URI:0x80fb3224 URI:http://www.google.com/profiles/googlebuzz>]
     xrd.links(:media_type => 'application/atom+xml')
-    # => [#<XRD::Link:0x80fbc11c URI:https://www.googleapis.com/buzz/v1/activities/111062888259659218284/@public>]
+    # => [#<XRD::Link:0x80fbc11c HREF:https://www.googleapis.com/buzz/v1/activities/111062888259659218284/@public>]
     xrd.links(:rel => 'describedby')
     # => [
-    #   #<XRD::Link:0x80fbd224 URI:http://www.google.com/profiles/googlebuzz>,
-    #   #<XRD::Link:0x80fbc914 URI:http://www.google.com/s2/webfinger/?q=acct%3Agooglebuzz%40gmail.com&fmt=foaf>
+    #   #<XRD::Link:0x80fbd224 HREF:http://www.google.com/profiles/googlebuzz>,
+    #   #<XRD::Link:0x80fbc914 HREF:http://www.google.com/s2/webfinger/?q=acct%3Agooglebuzz%40gmail.com&fmt=foaf>
     # ]
     xrd.links(:rel => 'describedby', :media_type => 'text/html')
-    # => [#<XRD::Link:0x80fbd224 URI:http://www.google.com/profiles/googlebuzz>]
+    # => [#<XRD::Link:0x80fbd224 HREF:http://www.google.com/profiles/googlebuzz>]
 
 # Install
 
