@@ -13,3 +13,18 @@
 #    limitations under the License.
 
 require 'xrd/version'
+require 'xrd/resource_descriptor'
+
+require 'httpadapter'
+require 'httpadapter/adapters/net_http'
+
+module XRD
+  def self.parse(xml)
+    return XRD::ResourceDescriptor.parse(xml)
+  end
+
+  def self.fetch_and_parse(
+      uri, adapter=HTTPAdapter::NetHTTPRequestAdapter, connection=nil)
+    return XRD::ResourceDescriptor.fetch_and_parse(uri, adapter, connection)
+  end
+end

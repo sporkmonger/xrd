@@ -16,7 +16,7 @@ require 'spec_helper'
 
 require 'httpadapter/adapters/mock'
 
-require 'xrd/resource_descriptor'
+require 'xrd'
 
 describe XRD::ResourceDescriptor do
   describe 'with an initialized resource descriptor' do
@@ -191,6 +191,57 @@ describe XRD::ResourceDescriptor do
     end
   end
 
+  shared_examples_for 'simple XRD example' do
+    it 'should return the correct expiration date' do
+      @xrd.expires.should == Time.gm(1970)
+    end
+
+    it 'should return the correct subject' do
+      @xrd.subject.to_str.should == 'http://example.com/subject'
+    end
+
+    it 'should return a parsed subject URI' do
+      @xrd.subject.should be_kind_of(Addressable::URI)
+    end
+
+    it 'should return the correct properties' do
+      (@xrd.properties.map { |k, v| [k.to_str, v] }).should include(
+        ['http://spec.example.net/type/person', nil]
+      )
+    end
+
+    it 'should return parsed property key URIs' do
+      @xrd.properties.each do |k, v|
+        k.should be_kind_of(Addressable::URI)
+        v.should be_kind_of(NilClass)
+      end
+    end
+
+    it 'should return the correct links' do
+      @xrd.links[0].rel.should == 'http://spec.example.net/auth/1.0'
+      @xrd.links[0].href.should == 'http://services.example.com/auth'
+      @xrd.links[1].rel.should == 'http://spec.example.net/photo/1.0'
+      @xrd.links[1].media_type.should == 'image/jpeg'
+      @xrd.links[1].href.should == 'http://photos.example.com/gpburdell.jpg'
+    end
+
+    it 'should return the correct link titles' do
+      @xrd.links[1].title.should == 'User Photo'
+      @xrd.links[1].title('en').should == 'User Photo'
+      @xrd.links[1].title('de').should == 'Benutzerfoto'
+
+      @xrd.links[1].title.lang.should == 'en'
+      @xrd.links[1].title('en').lang.should == 'en'
+      @xrd.links[1].title('de').lang.should == 'de'
+    end
+
+    it 'should return the correct link properties' do
+      @xrd.links[1].properties[0][0].should ===
+        'http://spec.example.net/created/1.0'
+      @xrd.links[1].properties[0][1].should == '1970-01-01'
+    end
+  end
+
   describe 'when attempting to fetch and parse an XRD document' do
     before do
       @xml = <<-XML
@@ -221,29 +272,63 @@ describe XRD::ResourceDescriptor do
       )
     end
 
-    it 'should return the correct expiration date' do
-      @xrd.expires.should == Time.gm(1970)
-    end
+    it_should_behave_like 'simple XRD example'
+  end
 
-    it 'should return the correct subject' do
-      @xrd.subject.to_str.should == 'http://example.com/subject'
-    end
-
-    it 'should return a parsed subject URI' do
-      @xrd.subject.should be_kind_of(Addressable::URI)
-    end
-
-    it 'should return the correct properties' do
-      (@xrd.properties.map { |k, v| [k.to_str, v] }).should include(
-        ['http://spec.example.net/type/person', nil]
-      )
-    end
-
-    it 'should return parsed property key URIs' do
-      @xrd.properties.each do |k, v|
-        k.should be_kind_of(Addressable::URI)
-        v.should be_kind_of(NilClass)
+  describe 'when attempting to fetch and parse an XRD document' do
+    before do
+      @xml = <<-XML
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Expires>1970-01-01T00:00:00Z</Expires>
+  <Subject>http://example.com/subject</Subject>
+  <Property type="http://spec.example.net/type/person" xsi:nil="true" />
+  <Link rel="http://spec.example.net/auth/1.0"
+    href="http://services.example.com/auth" />
+  <Link rel="http://spec.example.net/photo/1.0" type="image/jpeg"
+    href="http://photos.example.com/gpburdell.jpg">
+    <Title xml:lang="en">User Photo</Title>
+    <Title xml:lang="de">Benutzerfoto</Title>
+    <Property type="http://spec.example.net/created/1.0">1970-01-01</Property>
+  </Link>
+</XRD>
+      XML
+      @adapter = HTTPAdapter::MockAdapter.request_adapter do |request, conn|
+        [
+          200,
+          [['Content-Type', 'application/xrd+xml']],
+          [@xml],
+        ]
       end
+      @xrd = XRD.fetch_and_parse('http://example.com/xrd', @adapter)
+    end
+
+    it_should_behave_like 'simple XRD example'
+  end
+
+  describe 'when attempting to parse an XRD document with no title lang' do
+    before do
+      @xml = <<-XML
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Link rel="http://spec.example.net/photo/1.0" type="image/jpeg"
+    href="http://photos.example.com/gpburdell.jpg">
+    <Title>User Photo</Title>
+    <Title xml:lang="de">Benutzerfoto</Title>
+  </Link>
+</XRD>
+      XML
+      @xrd = XRD.parse(@xml)
+    end
+
+    it 'should return the correct link titles' do
+      @xrd.links[0].title.should == 'User Photo'
+      @xrd.links[0].title('en').should == 'User Photo'
+      @xrd.links[0].title('de').should == 'Benutzerfoto'
+
+      @xrd.links[0].title.lang.should == nil
+      @xrd.links[0].title('en').lang.should == nil
+      @xrd.links[0].title('de').lang.should == 'de'
     end
   end
 end
