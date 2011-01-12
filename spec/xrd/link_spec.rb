@@ -36,6 +36,13 @@ describe XRD::Link do
       it 'should return the correct href value' do
         @xrd.links.first.href.should == 'http://services.example.com/auth'
       end
+
+      it 'should be inspectable' do
+        @xrd.links.first.inspect.should be_kind_of(String)
+        @xrd.links.first.inspect.should include(
+          'http://services.example.com/auth'
+        )
+      end
     end
 
     describe 'with a Link element containing an image link' do
@@ -60,6 +67,13 @@ describe XRD::Link do
       it 'should return the correct href value' do
         @xrd.links.first.href.should ==
           'http://photos.example.com/gpburdell.jpg'
+      end
+
+      it 'should be inspectable' do
+        @xrd.links.first.inspect.should be_kind_of(String)
+        @xrd.links.first.inspect.should include(
+          'http://photos.example.com/gpburdell.jpg'
+        )
       end
     end
   end

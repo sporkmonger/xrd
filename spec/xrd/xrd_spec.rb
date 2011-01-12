@@ -15,6 +15,8 @@
 require 'spec_helper'
 
 require 'httpadapter/adapters/mock'
+require 'addressable/uri'
+require 'addressable/template'
 
 require 'xrd'
 
@@ -239,6 +241,92 @@ describe XRD::ResourceDescriptor do
       @xrd.links[1].properties[0][0].should ===
         'http://spec.example.net/created/1.0'
       @xrd.links[1].properties[0][1].should == '1970-01-01'
+    end
+
+    it 'should allow links to be queried by rel value' do
+      links = @xrd.links(:rel => 'http://spec.example.net/auth/1.0')
+      links.length.should == 1
+      links[0].rel.should == 'http://spec.example.net/auth/1.0'
+    end
+
+    it 'should allow links to be queried by rel value' do
+      links = @xrd.links(:rel => 'alternate')
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by media type' do
+      links = @xrd.links(:media_type => 'image/jpeg')
+      links.length.should == 1
+      links[0].media_type.should == 'image/jpeg'
+    end
+
+    it 'should allow links to be queried by media type' do
+      links = @xrd.links(:media_type => 'text/html')
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by media type' do
+      links = @xrd.links(:media_type => 'image')
+      links.length.should == 1
+      links[0].media_type.should == 'image/jpeg'
+    end
+
+    it 'should allow links to be queried by media type' do
+      links = @xrd.links(:media_type => 'text')
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(:href => 'http://services.example.com/auth')
+      links.length.should == 1
+      links[0].href.should == 'http://services.example.com/auth'
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(:href => 'http://www.example.org/')
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(
+        :href => Addressable::URI.parse('http://services.example.com/auth')
+      )
+      links.length.should == 1
+      links[0].href.should == 'http://services.example.com/auth'
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(
+        :href => Addressable::URI.parse('http://www.example.org/')
+      )
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(:href => /services\.example\.com/)
+      links.length.should == 1
+      links[0].href.should == 'http://services.example.com/auth'
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(:href => /www\.example\.org/)
+      links.length.should == 0
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(
+        :href => Addressable::Template.new('http://{sub}.example.com/{path}')
+      )
+      links.length.should == 2
+      links[0].href.should == 'http://services.example.com/auth'
+      links[1].href.should == 'http://photos.example.com/gpburdell.jpg'
+    end
+
+    it 'should allow links to be queried by href' do
+      links = @xrd.links(
+        :href => Addressable::Template.new('http://www.example.org/{path}')
+      )
+      links.length.should == 0
     end
   end
 

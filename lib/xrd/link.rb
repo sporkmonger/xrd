@@ -23,5 +23,15 @@ module XRD
       end
       return title
     end
+
+    ##
+    # Returns a <code>String</code> representation of the Link object's state.
+    #
+    # @return [String] The Link object's state, as a <code>String</code>.
+    def inspect
+      sprintf(
+        "#<%s:%#0x URI:%s>", self.class.to_s, self.object_id, self.href.to_str
+      )
+    end
   end
 end

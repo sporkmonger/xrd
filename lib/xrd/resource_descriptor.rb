@@ -22,6 +22,7 @@ module XRD
     remove_method :expires, :expires=
     remove_method :subject, :subject=
     remove_method :aliases, :add_aliases
+    remove_method :links
 
     def self.fetch_and_parse(
         uri, adapter=HTTPAdapter::NetHTTPRequestAdapter, connection=nil)
@@ -72,6 +73,38 @@ module XRD
 
     def add_aliases(new_alias)
       return self.aliases << Addressable::URI.parse(new_alias)
+    end
+
+    def links(query={})
+      @links ||= []
+      if query.empty?
+        return @links
+      else
+        result_set = []
+        for link in @links
+          matched = query.all? do |field, condition|
+            case field
+            when :rel
+              condition === link.rel
+            when :type, :media_type
+              if link.media_type.kind_of?(String) &&
+                  !condition.include?('/')
+                link.media_type.to_s.index(condition) == 0
+              else
+                condition === link.media_type
+              end
+            when :href, :uri
+              if condition.respond_to?(:match)
+                condition.match(link.href)
+              else
+                condition === link.href
+              end
+            end
+          end
+          result_set << link if matched
+        end
+        return result_set
+      end
     end
   end
 end
