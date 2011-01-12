@@ -11,6 +11,7 @@ module XRD
     element "Link", :as => :rel, :value => "rel"
     element "Link", :as => :media_type, :value => "type"
     element "Link", :as => :href, :value => "href"
+    element "Link", :as => :template, :value => "template"
     elements "Title", :as => :titles, :class => XRD::Title
 
     def title(lang=nil)
@@ -25,13 +26,21 @@ module XRD
     end
 
     ##
-    # Returns a <code>String</code> representation of the Link object's state.
+    # Returns a <code>String</code> representation of the link object's state.
     #
     # @return [String] The Link object's state, as a <code>String</code>.
     def inspect
-      sprintf(
-        "#<%s:%#0x URI:%s>", self.class.to_s, self.object_id, self.href.to_str
-      )
+      if self.template
+        sprintf(
+          "#<%s:%#0x TEMPLATE:%s>",
+          self.class.to_s, self.object_id, self.template
+        )
+      else
+        sprintf(
+          "#<%s:%#0x HREF:%s>",
+          self.class.to_s, self.object_id, self.href
+        )
+      end
     end
   end
 end

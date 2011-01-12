@@ -69,6 +69,10 @@ describe XRD::ResourceDescriptor do
         @xrd.property_values = []
       end).should raise_error(NoMethodError)
     end
+
+    it 'should be inspectable' do
+      @xrd.inspect.should be_kind_of(String)
+    end
   end
 
   describe 'when attempting to parse an empty XRD document' do
@@ -135,6 +139,11 @@ describe XRD::ResourceDescriptor do
 
     it 'should return a parsed subject URI' do
       @xrd.subject.should be_kind_of(Addressable::URI)
+    end
+
+    it 'should be inspectable' do
+      @xrd.inspect.should be_kind_of(String)
+      @xrd.inspect.should include('http://example.com/subject')
     end
   end
 

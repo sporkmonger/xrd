@@ -76,5 +76,36 @@ describe XRD::Link do
         )
       end
     end
+
+    describe 'with a Link element containing a template value' do
+      before do
+        @xml = <<-XML
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
+  <Link type="text/html"
+        template="http://people.example.com/{user}">
+</XRD>
+        XML
+        @xrd = XRD::ResourceDescriptor.parse(@xml)
+      end
+
+      it 'should return the correct media type value' do
+        @xrd.links.first.media_type.should == 'text/html'
+      end
+
+      it 'should return the correct href value' do
+        @xrd.links.first.href.should == nil
+      end
+
+      it 'should return the correct template value' do
+        @xrd.links.first.template.should == 'http://people.example.com/{user}'
+      end
+
+      it 'should be inspectable' do
+        @xrd.links.first.inspect.should be_kind_of(String)
+        @xrd.links.first.inspect.should include(
+          'http://people.example.com/{user}'
+        )
+      end
+    end
   end
 end

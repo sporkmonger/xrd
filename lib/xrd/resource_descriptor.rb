@@ -39,7 +39,6 @@ module XRD
       body.each do |chunk|
         xrd_content += chunk
       end
-      # TODO(sporkmonger) error handling
       return self.parse(xrd_content)
     end
 
@@ -86,7 +85,7 @@ module XRD
             case field
             when :rel
               condition === link.rel
-            when :type, :media_type
+            when :media_type, :type
               if link.media_type.kind_of?(String) &&
                   !condition.include?('/')
                 link.media_type.to_s.index(condition) == 0
@@ -105,6 +104,19 @@ module XRD
         end
         return result_set
       end
+    end
+
+    ##
+    # Returns a <code>String</code> representation of the resource descriptor
+    # object's state.
+    #
+    # @return [String]
+    #   The resource descriptor object's state, as a <code>String</code>.
+    def inspect
+      sprintf(
+        "#<%s:%#0x SUBJECT:%s>",
+        self.class.to_s, self.object_id, self.subject
+      )
     end
   end
 end
