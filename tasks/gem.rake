@@ -24,6 +24,7 @@ namespace :gem do
 
     s.add_runtime_dependency('sporkmonger-sax-machine', '>= 0.1.1')
     s.add_runtime_dependency('addressable', '>= 2.2.2')
+    s.add_runtime_dependency('httpadapter', '>= 0.2.1')
 
     s.add_development_dependency('rake', '~> 0.8.3')
     s.add_development_dependency('rspec', '~> 1.1.11')
